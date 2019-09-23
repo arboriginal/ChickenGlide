@@ -197,7 +197,7 @@ public class Plugin extends JavaPlugin implements Listener {
       return;
     }
 
-    if (!player.hasPermission("gc.glide") || player.isInsideVehicle()
+    if (!player.hasPermission("cg.glide") || player.isInsideVehicle()
         || (!((Ageable) entity).isAdult() && !options.limitations__baby_chicken))
       return;
 
@@ -214,19 +214,18 @@ public class Plugin extends JavaPlugin implements Listener {
   @EventHandler
   private void onEntityPotionEffect(EntityPotionEffectEvent event) {
     // @formatter:off
-    if ( event.isCancelled() || !options.behaviors__leave_by_itself
+    if ( event.isCancelled()
      || !event.getCause().equals(EntityPotionEffectEvent.Cause.EXPIRATION)
      || (event.getAction() != EntityPotionEffectEvent.Action.REMOVED
       && event.getAction() != EntityPotionEffectEvent.Action.CLEARED)
     ) return;
-    // @formatter:on
+    
     Entity           entity = event.getEntity();
     PotionEffectType type   = event.getOldEffect().getType();
 
-    if (type.equals(PotionEffectType.SLOW_FALLING) && entity instanceof Player
-        && getPlayerChicken((Player) entity) != null)
-      entity.eject();
-
+    if (options.behaviors__leave_by_itself && type.equals(PotionEffectType.SLOW_FALLING)
+        && entity instanceof Player && getPlayerChicken((Player) entity) != null) entity.eject();
+    // @formatter:on
     if (type.equals(PotionEffectType.LEVITATION) && entity instanceof Cow && entity.hasMetadata(eeMDKey))
       eeGiveUp(entity.getLocation().getChunk());
   }
@@ -261,7 +260,7 @@ public class Plugin extends JavaPlugin implements Listener {
   }
 
   private void startTask() {
-    task = new BukkitRunnable() {
+    if (task == null || task.isCancelled()) task = new BukkitRunnable() {
       @Override
       public void run() {
         if (isCancelled()) return;
