@@ -1,9 +1,9 @@
 name: ChickenGlide
 description: Glide while carrying chicken (Zelda OOT style)... Or launch them to your friends.
-version: 1.0
+version: 1.1
 
 author: arboriginal
-website: https://www.spigotmc.org/resources/authors/arboriginal.613013/
+website: https://www.spigotmc.org/resources/chickenglide.71518
 dev-url: https://github.com/arboriginal/ChickenGlide
 
 depend: [ ]

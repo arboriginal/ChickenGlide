@@ -54,7 +54,7 @@ public class Plugin extends JavaPlugin implements Listener {
 
   private class Options {
     int     behaviors__takes_damages__frequency, limitations__max_duration;
-    double  behaviors__eject_velocity, behaviors__takes_damages__amount, ee__chance;
+    double  behaviors__eject_velocity_min, behaviors__eject_velocity_max, behaviors__takes_damages__amount, ee__chance;
     boolean behaviors__ignore_grass, behaviors__leave_by_itself, behaviors__takes_damages__enabled,
         ee__alert_players, ee__enabled, ee__log_events, limitations__baby_chicken, limitations__stop_on_eject;
 
@@ -64,7 +64,6 @@ public class Plugin extends JavaPlugin implements Listener {
       behaviors__takes_damages__enabled   = config.getBoolean("behaviors.takes_damages.enabled");
       limitations__baby_chicken           = config.getBoolean("limitations.baby_chicken");
       limitations__stop_on_eject          = config.getBoolean("limitations.stop_on_eject");
-      behaviors__eject_velocity           = config.getDouble("behaviors.eject_velocity");
       behaviors__takes_damages__amount    = config.getDouble("behaviors.takes_damages.amount");
       behaviors__takes_damages__frequency = config.getInt("behaviors.takes_damages.frequency");
       limitations__max_duration           = config.getInt("limitations.max_duration");
@@ -72,6 +71,21 @@ public class Plugin extends JavaPlugin implements Listener {
       ee__enabled                         = config.getBoolean("easteregg.enabled");
       ee__log_events                      = config.getBoolean("easteregg.log_events");
       ee__chance                          = Math.max(0.01, Math.min(config.getDouble("easteregg.chance"), 100)) / 1000;
+
+      String[] velocities = config.getString("behaviors.eject_velocity").split(";");
+      double   min        = velocity(velocities[0]), max = (velocities.length == 2) ? velocity(velocities[1]) : min;
+
+      behaviors__eject_velocity_min = Math.min(min, max);
+      behaviors__eject_velocity_max = Math.max(min, max);
+    }
+
+    private double velocity(String value) {
+      try {
+        return Double.parseDouble(value);
+      }
+      catch (Exception e) {
+        return 0.5;
+      }
     }
   }
 
@@ -175,7 +189,7 @@ public class Plugin extends JavaPlugin implements Listener {
     if (player.getPassengers().size() > 0) {
       if (getPlayerChicken(player).equals(entity)) player.eject();
 
-      double velocity = options.behaviors__eject_velocity;
+      double velocity = getVelocity();
 
       if (velocity > 0)
         entity.setVelocity(player.getLocation().getDirection().normalize().multiply(velocity));
@@ -236,6 +250,14 @@ public class Plugin extends JavaPlugin implements Listener {
       return (Chicken) player.getPassengers().get(0);
 
     return null;
+  }
+
+  private double getVelocity() {
+    if (options.behaviors__eject_velocity_min == options.behaviors__eject_velocity_max)
+      return options.behaviors__eject_velocity_min;
+
+    return (Math.random() * (options.behaviors__eject_velocity_max - options.behaviors__eject_velocity_min))
+        + options.behaviors__eject_velocity_min;
   }
 
   private void startTask() {

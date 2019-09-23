@@ -34,6 +34,9 @@ behaviors:
   eject_velocity: 0.5 # Velocity given to the chicken when the player eject it / 0 to disable
                       # (not applied when the chicken leaves by itself)
                       # High values are fun but less realistic... Your choice! (Chuck Norris = 10)
+  # New in version 1.1:
+  # You can use the format « value1;value2 » to use a range. (suggested by LegendDouleB)
+  # Example: « 0.1;1.2 » will launch the chicken at a random velocity between 0.1 and 1.2
 
 # By definition, an EasterEgg is not officially documented... So, I let you find what is it :)
 # Chance is a multiplicator, not a percentage (values are capped from 0.01 to 100 when the config is read).
