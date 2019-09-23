@@ -15,7 +15,7 @@ database: false
 main: me.arboriginal.ChickenGlide.Plugin
 
 commands:
-  gc-reload:
+  cg-reload:
     description: Reload the plugin configuration
     permission: cg.reload
 

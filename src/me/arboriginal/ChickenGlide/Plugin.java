@@ -79,7 +79,7 @@ public class Plugin extends JavaPlugin implements Listener {
 
   @Override
   public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-    if (command.getName().equalsIgnoreCase("gc-reload")) {
+    if (command.getName().equalsIgnoreCase("cg-reload")) {
       reloadConfig();
       sender.sendMessage(config.getString("messages.config_reloaded"));
       return true;
