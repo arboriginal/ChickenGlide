@@ -1,0 +1,45 @@
+# ChickenGlide was a joke I've coded during an insomnia...
+# I had this idea after replaying to Zelda - Ocarina of Time, and visit the Kakariko village.
+# .
+# The main feature is to let you carry chicken (right click on it) to glide, but...
+# You can also play some games, for example basketball [I suggest velocity from 0.5 to 1],
+# or send chicken to other players who have to catch them before they touch the ground...
+# .
+# I hope you will have tons of fun with it, and if you make videos, don't hesitate to send me the link:
+# I will add them into the plugin description page (with credits to you obviously).
+# ........................................................................................ arboriginal
+messages: # You can use formatting codes, see https://minecraft.gamepedia.com/Formatting_codes
+  config_reloaded: "§8[§6§lChickenGlide§8] §aConfiguration reloaded."
+  easteregg_alert: "§7Something strange happens at §l{x}§7/§l{y}§7/§l{z}§7..." # See easteregg.alert_players
+  easteregg_log: |- # Log messages in console
+    §8[§6§lChickenGlide§8] §2EasterEgg {event}:
+    §b{coords}
+
+limitations:
+  baby_chicken: false # If true, you can also use baby chicken
+  max_duration: 120   # Seconds before the effect stops
+  stop_on_eject: true # If true, the effect stop when the chicken is ejected
+
+behaviors:
+  leave_by_itself: true # The chicken leave the player shoulder by itself when the effect stops
+
+  takes_damages:
+    enabled: true # If true, the chicken will take damages (trying to escape)
+    amount: 0.1   # How many damages the chicken takes
+    frequency: 1  # Frequency (seconds) to repeat
+  # Note: Damages to chicken are considered as given by the player, so the plugin works well with Revenge
+  # https://www.spigotmc.org/resources/revenge-1-7-to-1-14-support.18235/
+
+  ignore_grass: true  # If true, you can click on a chicken hidden in a grass block without having to cut it
+  eject_velocity: 0.5 # Velocity given to the chicken when the player eject it / 0 to disable
+                      # (not applied when the chicken leaves by itself)
+                      # High values are fun but less realistic... Your choice! (Chuck Norris = 10)
+
+# By definition, an EasterEgg is not officially documented... So, I let you find what is it :)
+# Chance is a multiplicator, not a percentage (values are capped from 0.01 to 100 when the config is read).
+# You should disable it on serious (earnest) servers, because it's something totally nutty (and useless).
+easteregg:
+  enabled: true
+  chance: 1
+  log_events: true
+  alert_players: true

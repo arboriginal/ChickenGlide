@@ -1,0 +1,29 @@
+name: ChickenGlide
+description: Glide while carrying chicken (Zelda OOT style)... Or launch them to your friends.
+version: 1.0
+
+author: arboriginal
+website: https://www.spigotmc.org/resources/authors/arboriginal.613013/
+dev-url: https://github.com/arboriginal/ChickenGlide
+
+depend: [ ]
+softdepend: [ ]
+
+api-version: 1.14
+database: false
+
+main: me.arboriginal.ChickenGlide.Plugin
+
+commands:
+  gc-reload:
+    description: Reload the plugin configuration
+    permission: cg.reload
+
+permissions:
+  cg.reload:
+    description: Allows to reload the configuration
+    default: op
+
+  cg.glide:
+    description: Allows to glide
+    default: true
