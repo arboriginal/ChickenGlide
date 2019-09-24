@@ -18,13 +18,26 @@ messages: # You can use formatting codes, see https://minecraft.gamepedia.com/Fo
     §8[§6§lChickenGlide§8] §2EasterEgg {event}:
     §b{coords}
 
+# When the player carrying a chicken, a head is given to him temporary, you can customize it here
+chicken_head: # (Suggested by ToasterBorst)
+  player_name: "MHF_Chicken"   # The playername used to generate the chicken head
+  display_name: "Poor chicken" # Item name the player will see
+
 limitations:
-  baby_chicken: false # If true, you can also use baby chicken
   max_duration: 120   # Seconds before the effect stops
+  baby_chicken: false # If true, you can also use baby chicken
   stop_on_eject: true # If true, the effect stop when the chicken is ejected
+  lock_hand: true     # If true, the player cannot change item slot why carrying the chicken
+  # in this case, he has to drop it or right click to launch the chicken
+  # If false, when the player change his current slot, the chicken flees
+  # /!\ I recommand lock hand because some players have a very sentitive mouse wheel, but your choice
 
 behaviors:
-  leave_by_itself: true # The chicken leave the player shoulder by itself when the effect stops
+  ignore_grass: true        # If true, you can click on a chicken hidden in a grass block without having to cut it
+  leave_by_itself: true     # The chicken leave the player shoulder by itself when the effect stops
+  change_slot_launch: false # (Only applied when limitations.lock_hand=false)
+  # If true,  the chicken is launched when the player change his active slot in his hotbar.
+  # If false, the chicken simply flees without velocity (more logic IMHO)
 
   takes_damages:
     enabled: true # If true, the chicken will take damages (trying to escape)
@@ -33,11 +46,9 @@ behaviors:
   # Note: Damages to chicken are considered as given by the player, so the plugin works well with Revenge
   # https://www.spigotmc.org/resources/revenge-1-7-to-1-14-support.18235/
 
-  ignore_grass: true  # If true, you can click on a chicken hidden in a grass block without having to cut it
   eject_velocity: 0.5 # Velocity given to the chicken when the player eject it / 0 to disable
                       # (not applied when the chicken leaves by itself)
                       # High values are fun but less realistic... Your choice! (Chuck Norris = 10)
-  # New in version 1.1:
   # You can use the format « value1;value2 » to use a range. (suggested by LegendDouleB)
   # Example: « 0.1;1.2 » will launch the chicken at a random velocity between 0.1 and 1.2
 

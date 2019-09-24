@@ -17,6 +17,7 @@ import org.bukkit.block.BlockFace;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Ageable;
 import org.bukkit.entity.Chicken;
 import org.bukkit.entity.Cow;
@@ -24,18 +25,26 @@ import org.bukkit.entity.EnderCrystal;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Firework;
+import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityPotionEffectEvent;
+import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerItemHeldEvent;
 import org.bukkit.event.world.ChunkLoadEvent;
 import org.bukkit.event.world.ChunkUnloadEvent;
 import org.bukkit.inventory.EquipmentSlot;
+import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemFlag;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.FireworkMeta;
+import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffect;
@@ -52,21 +61,31 @@ public class Plugin extends JavaPlugin implements Listener {
   private HashMap<String, int[]> eeChunks;
   private final String           eeMDKey = "gcEE";
 
+  // -- Private classes -----------------------------------------------------------------------------------------------
+
   private class Options {
+    ItemStack chicken_head;
+
     int     behaviors__takes_damages__frequency, limitations__max_duration;
     double  behaviors__eject_velocity_min, behaviors__eject_velocity_max, behaviors__takes_damages__amount, ee__chance;
-    boolean behaviors__ignore_grass, behaviors__leave_by_itself, behaviors__takes_damages__enabled,
-        ee__alert_players, ee__enabled, ee__log_events, limitations__baby_chicken, limitations__stop_on_eject;
+    String  chicken_head__display_name, chicken_head__player_name;
+    boolean behaviors__change_slot_launch, behaviors__ignore_grass, behaviors__leave_by_itself,
+        behaviors__takes_damages__enabled, limitations__baby_chicken, limitations__lock_hand,
+        limitations__stop_on_eject, ee__alert_players, ee__enabled, ee__log_events;
 
     Options(FileConfiguration config) {
+      behaviors__change_slot_launch       = config.getBoolean("behaviors.change_slot_launch");
       behaviors__ignore_grass             = config.getBoolean("behaviors.ignore_grass");
       behaviors__leave_by_itself          = config.getBoolean("behaviors.leave_by_itself");
       behaviors__takes_damages__enabled   = config.getBoolean("behaviors.takes_damages.enabled");
       limitations__baby_chicken           = config.getBoolean("limitations.baby_chicken");
+      limitations__lock_hand              = config.getBoolean("limitations.lock_hand");
       limitations__stop_on_eject          = config.getBoolean("limitations.stop_on_eject");
       behaviors__takes_damages__amount    = config.getDouble("behaviors.takes_damages.amount");
       behaviors__takes_damages__frequency = config.getInt("behaviors.takes_damages.frequency");
       limitations__max_duration           = config.getInt("limitations.max_duration");
+      chicken_head__display_name          = config.getString("chicken_head.display_name");
+      chicken_head__player_name           = config.getString("chicken_head.player_name");
       ee__alert_players                   = config.getBoolean("easteregg_alert_players");
       ee__enabled                         = config.getBoolean("easteregg.enabled");
       ee__log_events                      = config.getBoolean("easteregg.log_events");
@@ -77,6 +96,31 @@ public class Plugin extends JavaPlugin implements Listener {
 
       behaviors__eject_velocity_min = Math.min(min, max);
       behaviors__eject_velocity_max = Math.max(min, max);
+
+      chicken_head = getChickenHead();
+    }
+
+    @SuppressWarnings("deprecation")
+    private ItemStack getChickenHead() {
+      ItemStack head = new ItemStack(Material.PLAYER_HEAD);
+      SkullMeta meta = (SkullMeta) head.getItemMeta();
+      meta.setOwner(chicken_head__player_name);
+      meta.setDisplayName(chicken_head__display_name);
+      meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
+      head.setItemMeta(meta); // The enchantment on the head will prevent not to remove a head the player got elsewhere
+      head.addEnchantment(Enchantment.VANISHING_CURSE, 1);
+      return head;
+    }
+
+    @SuppressWarnings("deprecation")
+    private boolean isChickenHead(ItemStack item) {
+      if (item == null || !item.getType().equals(Material.PLAYER_HEAD)) return false;
+
+      SkullMeta meta = (SkullMeta) item.getItemMeta();
+
+      return meta.getOwner().equals(chicken_head__player_name)
+          && meta.getDisplayName().equals(chicken_head__display_name)
+          && meta.hasEnchant(Enchantment.VANISHING_CURSE);
     }
 
     private double velocity(String value) {
@@ -153,6 +197,10 @@ public class Plugin extends JavaPlugin implements Listener {
     Player player = (Player) event.getDismounted();
     player.removePotionEffect(PotionEffectType.SLOW_FALLING);
     if (options.behaviors__takes_damages__enabled) gliders.remove(player.getUniqueId());
+
+    Inventory playerInventory = player.getInventory();
+    for (int i = 0; i < playerInventory.getSize(); i++)
+      if (options.isChickenHead(playerInventory.getItem(i))) playerInventory.setItem(i, null);
   }
 
   @EventHandler
@@ -178,26 +226,26 @@ public class Plugin extends JavaPlugin implements Listener {
 
   @EventHandler
   private void onPlayerInteractEntity(PlayerInteractEntityEvent event) {
-    if (event.isCancelled() || event.getHand() == EquipmentSlot.OFF_HAND) return;
+    if (event.isCancelled()) return;
+
+    EquipmentSlot slot = event.getHand();
+    if (slot == EquipmentSlot.OFF_HAND) return;
 
     Entity entity = event.getRightClicked();
     if (!(entity instanceof Chicken)) return;
 
     Player player = event.getPlayer();
-    if (!player.getInventory().getItemInMainHand().getType().equals(Material.AIR)) return;
 
     if (player.getPassengers().size() > 0) {
-      if (getPlayerChicken(player).equals(entity)) player.eject();
+      if (!getPlayerChicken(player).equals(entity) || !options.isChickenHead(player.getInventory().getItemInMainHand()))
+        return;
 
-      double velocity = getVelocity();
-
-      if (velocity > 0)
-        entity.setVelocity(player.getLocation().getDirection().normalize().multiply(velocity));
-
+      launchChicken(player, entity);
       return;
     }
 
-    if (!player.hasPermission("cg.glide") || player.isInsideVehicle()
+    if (!player.getInventory().getItemInMainHand().getType().equals(Material.AIR)
+        || !player.hasPermission("cg.glide") || player.isInsideVehicle()
         || (!((Ageable) entity).isAdult() && !options.limitations__baby_chicken))
       return;
 
@@ -209,6 +257,41 @@ public class Plugin extends JavaPlugin implements Listener {
       gliders.add(player.getUniqueId());
       startTask();
     }
+
+    player.getInventory().setItemInMainHand(options.chicken_head);
+  }
+
+  @EventHandler
+  private void onPlayerItemHeld(PlayerItemHeldEvent event) {
+    if (event.isCancelled()) return;
+    Player player  = event.getPlayer();
+    Entity chicken = getPlayerChicken(player);
+    if (chicken == null) return;
+
+    if (options.limitations__lock_hand)
+      event.setCancelled(true);
+    else if (options.behaviors__change_slot_launch)
+      launchChicken(player, chicken);
+    else
+      player.eject();
+  }
+
+  @EventHandler
+  private void onInventoryClick(InventoryClickEvent event) {
+    if (!event.isCancelled() && options.isChickenHead(event.getCurrentItem())) event.setCancelled(true);
+  }
+
+  @EventHandler
+  private void onPlayerDropItem(PlayerDropItemEvent event) {
+    if (event.isCancelled()) return;
+    Item item = event.getItemDrop();
+    if (!options.isChickenHead(item.getItemStack())) return;
+
+    Player  player  = event.getPlayer();
+    Chicken chicken = getPlayerChicken(player);
+
+    if (chicken != null) launchChicken(player, chicken);
+    item.remove();
   }
 
   @EventHandler
@@ -223,11 +306,11 @@ public class Plugin extends JavaPlugin implements Listener {
     Entity           entity = event.getEntity();
     PotionEffectType type   = event.getOldEffect().getType();
 
-    if (options.behaviors__leave_by_itself && type.equals(PotionEffectType.SLOW_FALLING)
-        && entity instanceof Player && getPlayerChicken((Player) entity) != null) entity.eject();
-    // @formatter:on
-    if (type.equals(PotionEffectType.LEVITATION) && entity instanceof Cow && entity.hasMetadata(eeMDKey))
-      eeGiveUp(entity.getLocation().getChunk());
+    if (options.behaviors__leave_by_itself && entity instanceof Player
+      && type.equals(PotionEffectType.SLOW_FALLING) && getPlayerChicken((Player) entity) != null) entity.eject();
+    
+    if (entity instanceof Cow && type.equals(PotionEffectType.LEVITATION) && entity.hasMetadata(eeMDKey))
+      eeGiveUp(entity.getLocation().getChunk()); // @formatter:on
   }
 
   // -- Listener methods... Why so serious??? -------------------------------------------------------------------------
@@ -257,6 +340,14 @@ public class Plugin extends JavaPlugin implements Listener {
 
     return (Math.random() * (options.behaviors__eject_velocity_max - options.behaviors__eject_velocity_min))
         + options.behaviors__eject_velocity_min;
+  }
+
+  private void launchChicken(Player player, Entity chicken) {
+    player.eject();
+    double velocity = getVelocity();
+
+    if (velocity > 0)
+      chicken.setVelocity(player.getLocation().getDirection().normalize().multiply(velocity));
   }
 
   private void startTask() {
