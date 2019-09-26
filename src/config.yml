@@ -33,11 +33,16 @@ limitations:
   # /!\ I recommand lock hand because some players have a very sentitive mouse wheel, but your choice
 
 behaviors:
+  glide_when_carrying: true # If false... You disable the main feature of the plugin...
+  # But this has been requested by anoncraftbr who prefers only use the pick up and place features.
   ignore_grass: true        # If true, you can click on a chicken hidden in a grass block without having to cut it
   leave_by_itself: true     # The chicken leave the player shoulder by itself when the effect stops
   change_slot_launch: false # (Only applied when limitations.lock_hand=false)
   # If true,  the chicken is launched when the player change his active slot in his hotbar.
   # If false, the chicken simply flees without velocity (more logic IMHO)
+  right_click_launch: true  # If true, on right click you launch the chicken, false: it flees without velocity
+  place_when_sneaking: true # If true, whatever you choose for right_click_launch, if the player is sneaking
+  # when he right click, the chicken is gently place on the ground instead of launch / flees
 
   takes_damages:
     enabled: true # If true, the chicken will take damages (trying to escape)

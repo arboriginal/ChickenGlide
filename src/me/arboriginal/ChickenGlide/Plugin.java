@@ -69,14 +69,18 @@ public class Plugin extends JavaPlugin implements Listener {
     int     behaviors__takes_damages__frequency, limitations__max_duration;
     double  behaviors__eject_velocity_min, behaviors__eject_velocity_max, behaviors__takes_damages__amount, ee__chance;
     String  chicken_head__display_name, chicken_head__player_name;
-    boolean behaviors__change_slot_launch, behaviors__ignore_grass, behaviors__leave_by_itself,
+    boolean behaviors__change_slot_launch, behaviors__ignore_grass, behaviors__glide_when_carrying,
+        behaviors__leave_by_itself, behaviors__place_when_sneaking, behaviors__right_click_launch,
         behaviors__takes_damages__enabled, limitations__baby_chicken, limitations__lock_hand,
         limitations__stop_on_eject, ee__alert_players, ee__enabled, ee__log_events;
 
     Options(FileConfiguration config) {
       behaviors__change_slot_launch       = config.getBoolean("behaviors.change_slot_launch");
+      behaviors__glide_when_carrying      = config.getBoolean("behaviors.glide_when_carrying");
       behaviors__ignore_grass             = config.getBoolean("behaviors.ignore_grass");
       behaviors__leave_by_itself          = config.getBoolean("behaviors.leave_by_itself");
+      behaviors__place_when_sneaking      = config.getBoolean("behaviors.place_when_sneaking");
+      behaviors__right_click_launch       = config.getBoolean("behaviors.right_click_launch");
       behaviors__takes_damages__enabled   = config.getBoolean("behaviors.takes_damages.enabled");
       limitations__baby_chicken           = config.getBoolean("limitations.baby_chicken");
       limitations__lock_hand              = config.getBoolean("limitations.lock_hand");
@@ -195,7 +199,7 @@ public class Plugin extends JavaPlugin implements Listener {
 
     Player player = (Player) event.getDismounted();
 
-    if (options.limitations__stop_on_eject) {
+    if (options.limitations__stop_on_eject && options.behaviors__glide_when_carrying) {
       player.removePotionEffect(PotionEffectType.SLOW_FALLING);
       if (options.behaviors__takes_damages__enabled) gliders.remove(player.getUniqueId());
     }
@@ -242,7 +246,16 @@ public class Plugin extends JavaPlugin implements Listener {
       if (!getPlayerChicken(player).equals(entity) || !options.isChickenHead(player.getInventory().getItemInMainHand()))
         return;
 
-      launchChicken(player, entity);
+      if (options.behaviors__place_when_sneaking && player.isSneaking()) {
+        player.eject();
+        entity.teleport(player.getLocation());
+        return;
+      }
+
+      if (options.behaviors__right_click_launch)
+        launchChicken(player, entity);
+      else
+        player.eject();
       return;
     }
 
@@ -252,8 +265,10 @@ public class Plugin extends JavaPlugin implements Listener {
       return;
 
     player.addPassenger(entity);
-    player.addPotionEffect(new PotionEffect(
-        PotionEffectType.SLOW_FALLING, options.limitations__max_duration * 20, 0, false, false, false));
+
+    if (options.behaviors__glide_when_carrying)
+      player.addPotionEffect(new PotionEffect(
+          PotionEffectType.SLOW_FALLING, options.limitations__max_duration * 20, 0, false, false, false));
 
     if (options.behaviors__takes_damages__enabled) {
       gliders.add(player.getUniqueId());
@@ -308,7 +323,7 @@ public class Plugin extends JavaPlugin implements Listener {
     Entity           entity = event.getEntity();
     PotionEffectType type   = event.getOldEffect().getType();
 
-    if (options.behaviors__leave_by_itself && entity instanceof Player
+    if (options.behaviors__leave_by_itself && options.behaviors__glide_when_carrying && entity instanceof Player
       && type.equals(PotionEffectType.SLOW_FALLING) && getPlayerChicken((Player) entity) != null) entity.eject();
     
     if (entity instanceof Cow && type.equals(PotionEffectType.LEVITATION) && entity.hasMetadata(eeMDKey))
