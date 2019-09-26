@@ -190,13 +190,15 @@ public class Plugin extends JavaPlugin implements Listener {
   @EventHandler
   private void onEntityDismount(EntityDismountEvent event) {
     if (event.isCancelled() || !(event.getEntity() instanceof Chicken)
-        || !options.limitations__stop_on_eject
         || !(event.getDismounted() instanceof Player))
       return;
 
     Player player = (Player) event.getDismounted();
-    player.removePotionEffect(PotionEffectType.SLOW_FALLING);
-    if (options.behaviors__takes_damages__enabled) gliders.remove(player.getUniqueId());
+
+    if (options.limitations__stop_on_eject) {
+      player.removePotionEffect(PotionEffectType.SLOW_FALLING);
+      if (options.behaviors__takes_damages__enabled) gliders.remove(player.getUniqueId());
+    }
 
     Inventory playerInventory = player.getInventory();
     for (int i = 0; i < playerInventory.getSize(); i++)

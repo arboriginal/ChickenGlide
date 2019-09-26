@@ -27,7 +27,7 @@ limitations:
   max_duration: 120   # Seconds before the effect stops
   baby_chicken: false # If true, you can also use baby chicken
   stop_on_eject: true # If true, the effect stop when the chicken is ejected
-  lock_hand: true     # If true, the player cannot change item slot why carrying the chicken
+  lock_hand: true     # If true, the player cannot change item slot while carrying the chicken
   # in this case, he has to drop it or right click to launch the chicken
   # If false, when the player change his current slot, the chicken flees
   # /!\ I recommand lock hand because some players have a very sentitive mouse wheel, but your choice
@@ -42,7 +42,7 @@ behaviors:
   takes_damages:
     enabled: true # If true, the chicken will take damages (trying to escape)
     amount: 0.1   # How many damages the chicken takes
-    frequency: 1  # Frequency (seconds) to repeat
+    frequency: 3  # Frequency (seconds) to repeat
   # Note: Damages to chicken are considered as given by the player, so the plugin works well with Revenge
   # https://www.spigotmc.org/resources/revenge-1-7-to-1-14-support.18235/
 
