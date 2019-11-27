@@ -29,7 +29,7 @@ Location l){int y=l.getBlockY();if(y<63)return false;Block b=l.getBlock();if(!b.
 equals(Material.GRASS_BLOCK))return false;for(int d=1;y+d<255;d++)if(b.getRelative(BlockFace.UP,d).getType()!=Material.
 AIR)return false;return true;}static private void eeLog(Chunk c,String e){if(!inst.conf.EE_LOG)return;int x=c.getX()<<4,
 z=c.getZ()<<4;Bukkit.getLogger().info(inst.conf.MSG_EE_LOG.replace("{event}",e).replace("{coords}","\tWorld: "+c.
-getWorld().getName()+",chunk: "+c.getX()+"/"+c.getZ()+"("+x+" / "+z+" <->"+(x+15)+" / "+(z+15)+")"));}static private
+getWorld().getName()+", chunk: "+c.getX()+"/"+c.getZ()+" ("+x+"/"+z+" <-> "+(x+15)+"/"+(z+15)+")"));}static private
 boolean eePlayerAround(Location l){for(Entity e:l.getWorld().getNearbyEntities(l,20,20,20))if(e instanceof Player)return
 true;return false;}static private void eeStop(int t,String c){Bukkit.getScheduler().cancelTask(t);inst.eeCs.remove(c);}
 static private BukkitTask eeTask(Chunk c,Cow e,EnderCrystal o){return new BukkitRunnable(){public void run(){if(
