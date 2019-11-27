@@ -1,0 +1,24 @@
+name: ${project.name}
+description: ${project.description}
+version: ${project.version}
+
+author: arboriginal
+website: https://www.spigotmc.org/resources/${spigot-id}/
+dev-url: https://github.com/arboriginal/${project.artifactId}
+
+main: ${project.groupId}.${project.artifactId}.${spigot-main}
+api-version: ${spigot-api}
+
+commands:
+  cg-reload:
+    description: Reload the plugin configuration
+    permission: cg.reload
+
+permissions:
+  cg.reload:
+    description: Allows to reload the configuration
+    default: op
+
+  cg.glide:
+    description: Allows to glide
+    default: true

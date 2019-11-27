@@ -13,15 +13,18 @@
 # ........................................................................................ arboriginal
 messages: # You can use formatting codes, see https://minecraft.gamepedia.com/Formatting_codes
   config_reloaded: "§8[§6§lChickenGlide§8] §aConfiguration reloaded."
+  wrong_item_type: "§cItem you choose for chicken_head.head_item is invalid... Using default."
   easteregg_alert: "§7Something strange happens at §l{x}§7/§l{y}§7/§l{z}§7..." # See easteregg.alert_players
   easteregg_log: |- # Log messages in console
     §8[§6§lChickenGlide§8] §2EasterEgg {event}:
     §b{coords}
 
-# When the player carrying a chicken, a head is given to him temporary, you can customize it here
-chicken_head: # (Suggested by ToasterBorst)
-  player_name: "MHF_Chicken"   # The playername used to generate the chicken head
+# When a player carry a chicken, he temporary get an item (a chicken head by default, suggested by ToasterBorst)
+chicken_head:
+  player_name: "MHF_Chicken"   # The playername used to generate the chicken head (ignored if item is not "PLAYER_HEAD")
   display_name: "Poor chicken" # Item name the player will see
+  head_item: PLAYER_HEAD       # Item used as chicken head (can be for example a feather, suggested by Minestick)
+  # Available values: https://hub.spigotmc.org/javadocs/spigot/org/bukkit/Material.html
 
 limitations:
   max_duration: 120   # Seconds before the effect stops
@@ -30,7 +33,7 @@ limitations:
   lock_hand: true     # If true, the player cannot change item slot while carrying the chicken
   # in this case, he has to drop it or right click to launch the chicken
   # If false, when the player change his current slot, the chicken flees
-  # /!\ I recommand lock hand because some players have a very sentitive mouse wheel, but your choice
+  # /!\ I recommend lock hand because some players have a very sentitive mouse wheel, but your choice
 
 behaviors:
   glide_when_carrying: true # If false... You disable the main feature of the plugin...
